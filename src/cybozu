@@ -14,7 +14,7 @@ cybozu_login() {
   [ -z "$user" ] && echo "アカウント名を入力してください。" >&2 && read user
   [ -z "$password" ] && echo "パスワードを入力してください。" >&2 && read -s password && echo
 
-  login_body="$(curl -c $cookie -sfm5 -XPOST \
+  login_body="$(curl -c $cookie --retry 3 -sfm5 -XPOST \
                     -d"_Login=1" \
                     -d"_System=login" \
                     -d"LoginMethod=2" \
@@ -28,7 +28,7 @@ cybozu_login() {
 
   status=$?
 
-  if [ "$status" != "0" -o ! -z "$(scrape_error_message $login_body)" ]; then
+  if [ "$status" != "0" -o -n "$(scrape_error_message $login_body)" ]; then
     echo failed to login >&2
     echo "end_status: $status" >&2
     echo "error_message: "$(scrape_error_message "$login_body") >&2
@@ -46,7 +46,7 @@ scrape_error_message() {
 }
 
 crawl_schedule() {
-  body=$(curl -m5 -f -s -b $cookie $cybozu_url |\
+  body=$(curl --retry 3 -fsm5 -b $cookie $cybozu_url |\
            tr -d '$' |\
            tr -d '`' |\
            tr -d ';'
@@ -90,13 +90,13 @@ scrape_schedule() {
 
 main() {
   if [ ! -e $cookie ]; then 
-    cybozu_login $user $password || exit 1
+    cybozu_login || exit 1
   fi 
   body="$(crawl_schedule)" || exit 1
 
   #cookieでうまくログインできなかった場合
-  if [ ! -z "$(echo "$body" | grep 'ログイン - サイボウズ Office')" ]; then
-    cybozu_login $user $password || exit 1
+  if [ -n "$(echo "$body" | grep 'ログイン - サイボウズ Office')" ]; then
+    cybozu_login || exit 1
     body="$(crawl_schedule)" || exit 1
   fi
 

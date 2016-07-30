@@ -1,11 +1,11 @@
 #!/bin/sh
 while getopts i:u:n:c:b opt; do
   case $opt in
-  'i') icon=":$OPTARG:" ;;
-  'u') url=$OPTARG ;;
-  'n') name=$OPTARG ;;
-  'c') channel=$OPTARG ;;
-  'b') back_quote="on" ;;
+    'i') icon=":$OPTARG:" ;;
+    'u') url=$OPTARG ;;
+    'n') name=$OPTARG ;;
+    'c') channel=$OPTARG ;;
+    'b') back_quote="on" ;;
   esac
 done
 
@@ -14,7 +14,7 @@ shift $((OPTIND - 1))
 message="$(echo "${*:-$(cat -)}" | tr '"' '”' | tr -d \\)"
 json="$(cat <<EOF
 payload={
-  "channel": "${channel:-mine}",
+  "channel": "${channel:-trash}",
   "username": "${name:-my_bot}",
   "icon_emoji": "${icon:-":ghost:"}",
   "text": "$([ "$back_quote" != "on" ] && echo "$message" || echo '```'"$message" '```')"

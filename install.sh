@@ -19,10 +19,10 @@ slack_url =
 channel = trash 
 
 # botのアイコンの設定
-icon = nagao
+bot_icon = nagao
 
 # botの名前の設定
-name = my_bot
+bot_name = my_bot
 
 ### cybozu settings ###
 # サイボウズのアカウント

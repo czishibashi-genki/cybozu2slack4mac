@@ -1,5 +1,5 @@
 #!/bin/bash
-#cronで実行するため、言語の環境変数をexport
+#atで実行するため、言語の環境変数をexport
 export LANG="ja_JP.UTF-8"
 
 #project_root_dir
@@ -9,16 +9,16 @@ prd=$(cd $(dirname $0)/.. && pwd)
 this=$prd/src/${0##*/}
 
 #logファイル
-register_log=$prd/log/register.log
-register_error_log=$prd/log/register_err.log
+register_command_log=$prd/log/register_command.log
+register_info_log=$prd/log/register_info.log
 slack_log=$prd/log/slack.log
-date +"[%R %F]" | tee -a $register_log >>$register_error_log 
+date +"[%R %F]" | tee -a $register_command_log >>$register_info_log 
 
 #slackのコマンドのpath
-ss=$prd/src/send2slack
+send_to_slack=$prd/src/send2slack
 
 #cybozuのコマンドのpath
-cybozu=$prd/src/cybozu
+crawl_cybozu=$prd/src/cybozu
 
 #設定ファイルから設定を読み込む
 read_env() {
@@ -26,7 +26,6 @@ read_env() {
     var_name=$(echo "$line" | awk -F= '{gsub(/^ +| +$/,"",$1); print $1}')
     var_value=$(echo "$line" | awk -F= '{gsub(/^ +| +$/,"",$2); print $2}')
     eval "${var_name:-_}='${var_value:-_}'"
-    echo "${var_name:-_}='${var_value:-_}'"
   done < <(cat $prd/resource/env | grep -Ev "^ *#+|^ *$")
 }
 
@@ -39,42 +38,48 @@ get_minus_5min_datetime() {
 create_command_to_send_to_slack() {
    echo "$*" |\
      awk "{ 
-       gsub(\"∆\", \":warning:\");
-       print \"echo '\"\$0\"' | tee -a $slack_log | $ss -i'$icon' -c'$channel' -u'$slack_url' 2>>$slack_log\";
+       print \"echo '\"\$0\"' | tee -a $slack_log | $send_to_slack -n'$bot_name' -i'$bot_icon' -c'$channel' -u'$slack_url' 2>>$slack_log\";
      }"
 }
 
+regist_reminder() {
+  schedules=$($crawl_cybozu $account $password) || return 1
+
+  if [ -n "$schedules" ]; then
+    paste \
+        <(create_command_to_send_to_slack "${schedules//∆/:warning:}") \
+        <(get_minus_5min_datetime "$(echo "${schedules//-/ }" |\
+            awk '
+              $1 != "∆"{$0 = "_ "$0}
+              {print}
+            ' |\
+            cut -d" " -f2- )"\
+        ) |\
+      awk -F"\t" '
+        {
+          command = "date +[%R_%D] >>'"$slack_log"'; "$1;
+          print "echo \"", command, "\" | at ", $2
+        }' |\
+      tee -a $register_command_log |\
+      bash 2>>$register_info_log || return 1
+  fi
+}
+
 #次の日のreminderを登録するシェルをatコマンドのqueueに追加する
-#atコマンドはsleep状態でも動くらしいのでcronではなくatコマンドで
+#atコマンドはsleep状態でも次起動した時すぐ動くらしいのでcronではなくatコマンドで
 regist_next() {
   case $(date +%w) in 
     5) next_day=$(date -v+3d +%D) ;;
     *) next_day=$(date -v+1d +%D) ;;
   esac
-  echo "bash $this" | at 9:53 $next_day 2>>$register_error_log
+  echo "bash $this" | at 9:53 $next_day 2>>$register_info_log
 }
+
 
 main() {
   read_env 
+  regist_reminder || exit 1
   regist_next
-  schedules=$($cybozu $account $password) && [ ! -z "$schedules" ] || exit 1
-
-  paste \
-      <(create_command_to_send_to_slack "$schedules") \
-      <(get_minus_5min_datetime "$(echo "${schedules//-/ }" |\
-          awk '
-          $1 != "∆"{$0 = "_ "$0}
-          {print}
-          ' |\
-          cut -d" " -f2- )"\
-      ) |\
-    awk -F"\t" '
-      {
-        command = "date +[%R_%D] >>'"$slack_log"'; "$1;
-        print "echo \"", command, "\" | at ", $2
-      }' |\
-    tee -a $register_log |\
-    bash 2>>$register_error_log
 }
 
 main
