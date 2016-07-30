@@ -1,0 +1,106 @@
+#!/bin/sh
+#Project_Root_Dir
+prd=$(cd $(dirname $0)/.. && pwd)
+cookie=$prd/resource/cybozu_cookie.txt
+cybozu_url=https://cyberz-office.jp/cgi-bin/cbag/ag.cgi
+
+user=$1
+password=$2
+
+# loginしてcookieを保存する関数
+cybozu_login() {
+  echo "try to login to cybozu..." >&2
+
+  [ -z "$user" ] && echo "アカウント名を入力してください。" >&2 && read user
+  [ -z "$password" ] && echo "パスワードを入力してください。" >&2 && read -s password && echo
+
+  login_body="$(curl -c $cookie -sfm5 -XPOST \
+                    -d"_Login=1" \
+                    -d"_System=login" \
+                    -d"LoginMethod=2" \
+                    -d"_Account=$user" \
+                    -d"Password=$password" \
+                    $cybozu_url |\
+                  tr -d '`' |\
+                  tr -d '$' |\
+                  tr -d ';'
+                exit ${PIPESTATUS[0]} )"
+
+  status=$?
+
+  if [ "$status" != "0" -o ! -z "$(scrape_error_message $login_body)" ]; then
+    echo failed to login >&2
+    echo "end_status: $status" >&2
+    echo "error_message: "$(scrape_error_message "$login_body") >&2
+    rm $cookie 2>/dev/null
+    return 1
+  fi
+}
+
+scrape_error_message() {
+  echo "$*" |\
+    grep 'id="ErrorMessage"' |\
+    grep -oE ">[^<]+<" |\
+    tr -d ">" |\
+    tr -d "<"
+}
+
+crawl_schedule() {
+  body=$(curl -m5 -f -s -b $cookie $cybozu_url |\
+           tr -d '$' |\
+           tr -d '`' |\
+           tr -d ';'
+         exit ${PIPESTATUS[0]})
+
+  status=$?
+  if [ "$status" != 0 ]; then
+    echo "failed to crawl!" >&2
+    echo "end_status: $status" >&2
+    return 1
+  fi
+  echo "$body"
+}
+
+scrape_schedule() {
+  echo "$*" |\
+    tr -d "\n" |\
+    awk '{gsub(/<\/?td ?/, "\n");print}' |\
+    grep eventcell |\
+    awk -v day=${day:-1} 'NR==day{gsub(/<span/,"\n");print}' |\
+    grep -E "class=\"(eventDateTime|eventDetail)\"" |\
+    tr -d "ø" |\
+    awk '
+      /class="eventDateTime"/ {
+        match($0, /[0-9:]{4,5}-[0-9:]{4,5}/);
+        time = substr($0, RSTART, RLENGTH);
+        if ($0 ~ /<img/) {
+          time = "∆ "time;
+        }
+        print time, " ";
+      }
+
+      /class="eventDetail"/ {
+        match($0, /title="[^"]*"/);
+        vius = length("title=_");
+        print substr($0, RSTART + vius, RLENGTH - vius - 1), "ø";
+      } ' |\
+    tr -d "\n" |\
+    tr "ø" "\n"
+}
+
+main() {
+  if [ ! -e $cookie ]; then 
+    cybozu_login $user $password || exit 1
+  fi 
+  body="$(crawl_schedule)" || exit 1
+
+  #cookieでうまくログインできなかった場合
+  if [ ! -z "$(echo "$body" | grep 'ログイン - サイボウズ Office')" ]; then
+    cybozu_login $user $password || exit 1
+    body="$(crawl_schedule)" || exit 1
+  fi
+
+  scrape_schedule "$body"
+}
+
+main
