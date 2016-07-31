@@ -37,6 +37,12 @@ get_minus_5min_datetime() {
 #atコマンドで実行するコマンドを求める
 create_command_to_send_to_slack() {
    echo "$*" |\
+     awk '
+     /（非公開）/{
+       $0 = $1" （非公開）"
+     }
+     { print }
+     ' |\
      awk "{ 
        print \"echo '\"\$0\"' | tee -a $slack_log | $send_to_slack -n'$bot_name' -i'$bot_icon' -c'$channel' -u'$slack_url' 2>>$slack_log\";
      }"

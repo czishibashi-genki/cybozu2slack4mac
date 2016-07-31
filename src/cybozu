@@ -46,11 +46,11 @@ scrape_error_message() {
 }
 
 crawl_schedule() {
-  body=$(curl --retry 3 -fsm5 -b $cookie $cybozu_url |\
+  body="$(curl --retry 3 -fsm5 -b $cookie $cybozu_url |\
            tr -d '$' |\
            tr -d '`' |\
            tr -d ';'
-         exit ${PIPESTATUS[0]})
+         exit ${PIPESTATUS[0]})"
 
   status=$?
   if [ "$status" != 0 ]; then
@@ -64,9 +64,9 @@ crawl_schedule() {
 scrape_schedule() {
   echo "$*" |\
     tr -d "\n" |\
-    awk '{gsub(/<\/?td ?/, "\n");print}' |\
+    awk '{gsub(/<td( | >)/, "\n");print}' |\
     grep eventcell |\
-    awk -v day=${day:-1} 'NR==day{gsub(/<span/,"\n");print}' |\
+    awk -v day=${day:-1} 'NR==day{gsub(/<span( |>)/,"\n");print}' |\
     grep -E "class=\"(eventDateTime|eventDetail)\"" |\
     tr -d "ø" |\
     awk '
@@ -78,11 +78,15 @@ scrape_schedule() {
         }
         print time, " ";
       }
-
+ 
       /class="eventDetail"/ {
-        match($0, /title="[^"]*"/);
         vius = length("title=_");
-        print substr($0, RSTART + vius, RLENGTH - vius - 1), "ø";
+        match($0, /title="[^"]*"/);
+        title = substr($0, RSTART + vius, RLENGTH - vius - 1);
+        if ($0 ~ /非公開/){
+          title = title"（非公開）"
+        }
+        print title, "ø";
       } ' |\
     tr -d "\n" |\
     tr "ø" "\n"
