@@ -44,12 +44,12 @@ create_command_to_send_to_slack() {
      { print }
      ' |\
      awk "{ 
-       print \"echo '\"\$0\"' | tee -a $slack_log | $send_to_slack -n'$bot_name' -i'$bot_icon' -c'$channel' -u'$slack_url' 2>>$slack_log\";
+       print \"echo '\"\$0\"' | tee -a $slack_log | $send_to_slack -n'$bot_name' -i'$bot_icon' -c'$channel' -u'$slack_url' 1>/dev/null 2>>$slack_log\";
      }"
 }
 
 regist_reminder() {
-  schedules=$($crawl_cybozu $account $password) || return 1
+  schedules=$($crawl_cybozu $cybozu_account $cybozu_password 2>>$register_info_log) || return 1
 
   if [ -n "$schedules" ]; then
     paste \

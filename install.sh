@@ -26,10 +26,10 @@ bot_name = my_bot
 
 ### cybozu settings ###
 # サイボウズのアカウント
-account = 
+cybozu_account = 
 
 # サイボウズのパスワード
-password = 
+cybozu_password = 
 
 EOF
 
