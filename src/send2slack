@@ -1,8 +1,7 @@
 #!/bin/sh
-while getopts i:u:n:c:b opt; do
+while getopts i:n:c:b opt; do
   case $opt in
     'i') icon=":$OPTARG:" ;;
-    'u') url=$OPTARG ;;
     'n') name=$OPTARG ;;
     'c') channel=$OPTARG ;;
     'b') back_quote="on" ;;
@@ -11,7 +10,11 @@ done
 
 shift $((OPTIND - 1))
 
+url=${1:?urlを指定してください！！}
+shift 1
+
 message="$(echo "${*:-$(cat -)}" | tr '"' '”' | tr -d \\)"
+
 json="$(cat <<EOF
 payload={
   "channel": "${channel:-trash}",
@@ -21,4 +24,4 @@ payload={
 }
 EOF)"
 
-curl -s -XPOST --data-urlencode "$json" $url 
+curl -sfm5 -XPOST --data-urlencode "$json" $url 
