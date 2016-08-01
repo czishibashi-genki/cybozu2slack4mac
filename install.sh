@@ -40,5 +40,5 @@ echo "atコマンドを有効にするために以下のコマンドを実行し
 echo "sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist"
 sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist
 
-echo "bash $prd/src/regist_reminder_from_cybozu_to_slack" | at $(date -v+3M +"%R %D")
+echo "bash $prd/src/regist_reminder" | at $(date -v+3M +"%R %D")
 echo "install完了しました。3分後に動き始めます。"
