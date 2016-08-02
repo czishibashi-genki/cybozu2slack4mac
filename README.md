@@ -32,11 +32,12 @@ sh cybozu2slack4mac/install.sh
 - cybozuに登録されている予定5分前にslackに通知するjobをatコマンドに登録します
 
 ## cybozu
-- **usage** `cybozu [account_name] [password]`
+- **usage** `cybozu [-p] [account_name] [password]`
 - cybozuから予定をcralwingします.
 - cookieが残っている場合はそれを使ってログインします
 - account_nameとpasswordを省略した場合かつcookieでloginできない場合は入力を求められます.
 - 予定の時間がかぶっている場合は行頭に「∆」がつきます
+- pオプションをつけると予定がかぶってても「∆」をつけずに出力します
 
 結果例
 

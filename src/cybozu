@@ -4,6 +4,14 @@ prd=$(cd $(dirname $0)/.. && pwd)
 cookie=$prd/resource/cybozu_cookie.txt
 cybozu_url=https://cyberz-office.jp/cgi-bin/cbag/ag.cgi
 
+while getopts p opt; do
+  case $opt in
+    'p') plain=on ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
 user=$1
 password=$2
 
@@ -92,6 +100,19 @@ scrape_schedule() {
     tr "ø" "\n"
 }
 
+#∆を取り除いたscheduleを出力する
+scrape_schedule_in_plain(){
+  scrape_schedule "$*" |\
+    awk '{
+      gsub("∆ ", "");
+      print;
+    }'
+}
+
+scraper_factory() {
+  [ -z "$plain" ] && echo "scrape_schedule" || echo "scrape_schedule_in_plain"
+}
+
 main() {
   if [ ! -e $cookie ]; then 
     cybozu_login || exit 1
@@ -104,7 +125,7 @@ main() {
     body="$(crawl_schedule)" || exit 1
   fi
 
-  scrape_schedule "$body"
+  $(scraper_factory) "$body"
 }
 
 main
