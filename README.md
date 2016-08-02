@@ -27,7 +27,7 @@ sh cybozu2slack4mac/install.sh
 # コマンドの詳細
 ## regist_reminder
 - cybozuコマンドとsend2slackコマンドを使ってリマインドを登録するコマンド
-- cybozuに登録されている予定5分前にslackに通知します
+- cybozuに登録されている予定5分前にslackに通知するjobをatコマンドに登録します
 
 ## cybozu
 - **usage** `cybozu [account_name] [password]`
@@ -47,6 +47,7 @@ sh cybozu2slack4mac/install.sh
 
 ## send2slack
 - **usage** `send2slack [-i bot_icon] [-n bot_name] [-c channel] [-b] url message`
+- bオブションをつけるとバッククウォートでmessageを囲って送信します。(message => ```message```)
 - パイプ越しに渡すこともできます
 
 ```
