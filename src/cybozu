@@ -4,8 +4,9 @@ prd=$(cd $(dirname $0)/.. && pwd)
 cookie=$prd/resource/cybozu_cookie.txt
 cybozu_url=https://cyberz-office.jp/cgi-bin/cbag/ag.cgi
 
-while getopts p opt; do
+while getopts d:p opt; do
   case $opt in
+    'd') day=$((OPTARG + 1)) ;;
     'p') plain=on ;;
   esac
 done

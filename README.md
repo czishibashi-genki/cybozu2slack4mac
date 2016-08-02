@@ -25,6 +25,10 @@ sh cybozu2slack4mac/install.sh
 - 削除　　 `at -r job番号`
 - 全件削除 `at -r $(atq | cut -f1)`
 
+# ログ
+- slack.log : slackに送ったメッセージが出力されます
+- register_command.log: atコマンドに登録するときのコマンドが出力されます
+- register_info.log: atコマンドにjobを登録したときのlogが出力されます
 
 # コマンドの詳細
 ## regist_reminder
@@ -32,12 +36,16 @@ sh cybozu2slack4mac/install.sh
 - cybozuに登録されている予定5分前にslackに通知するjobをatコマンドに登録します
 
 ## cybozu
-- **usage** `cybozu [-p] [account_name] [password]`
+- **usage** `cybozu [-p] [-d day] [account_name] [password]`
 - cybozuから予定をcralwingします.
 - cookieが残っている場合はそれを使ってログインします
 - account_nameとpasswordを省略した場合かつcookieでloginできない場合は入力を求められます.
 - 予定の時間がかぶっている場合は行頭に「∆」がつきます
-- pオプションをつけると予定がかぶってても「∆」をつけずに出力します
+- pオプションをつけると予定が被っていても「∆」をつけずに出力します
+- dオプションで今日を基準とした相対的な日付を指定できます(デフォルトはコマンドを実行した日)
+  - -d0 コマンドを実行したその日の予定
+  - -d1 コマンドを実行した次の日の予定
+- **ただし-dオプションで指定できるのは6日先までで,それ以降は取得できません**
 
 結果例
 
