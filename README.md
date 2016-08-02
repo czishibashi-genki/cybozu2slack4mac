@@ -26,9 +26,11 @@ sh cybozu2slack4mac/install.sh
 - 全件削除 `at -r $(atq | cut -f1)`
 
 # ログ
-- slack.log : slackに送ったメッセージが出力されます
-- register_command.log: atコマンドに登録するときのコマンドが出力されます
-- register_info.log: atコマンドにjobを登録したときのlogが出力されます
+| file | 内容 |
+|:-----|:-----|
+| slack.log | slackに送ったメッセージが出力されます |
+| register_command.log | atコマンドに登録するコマンドが出力されます |
+| register_info.log | atコマンドにjob登録した時の,atコマンドの出力が記録されます |
 
 # コマンドの詳細
 ## regist_reminder
@@ -45,7 +47,7 @@ sh cybozu2slack4mac/install.sh
 - dオプションで今日を基準とした相対的な日付を指定できます(デフォルトはコマンドを実行した日)
   - -d0 コマンドを実行したその日の予定
   - -d1 コマンドを実行した次の日の予定
-- **ただし-dオプションで指定できるのは6日先までで,それ以降は取得できません**
+- **ただし-dオプションで指定できるのは0~6日先までで、それ以前・以降は取得できません**
 
 結果例
 
