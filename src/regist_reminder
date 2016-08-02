@@ -85,7 +85,7 @@ regist_next() {
 
 main() {
   read_env 
-  regist_reminder || exit 1
+  regist_reminder 
   regist_next
 }
 
