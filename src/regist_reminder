@@ -44,7 +44,8 @@ create_command_to_send_to_slack() {
      { print }
      ' |\
      awk "{ 
-       print \"echo '\"\$0\"' | tee -a $slack_log | $send_to_slack -n'$bot_name' -i'$bot_icon' -c'$channel' '$slack_url' 1>/dev/null 2>>$slack_log\";
+       send2slack = \"$send_to_slack -n'$bot_name' -i'$bot_icon' -c'$channel' '$slack_url' 1>/dev/null 2>>$slack_log\";
+       print \"echo '\"\$0\"' | tee -a $slack_log | \"send2slack;
      }"
 }
 

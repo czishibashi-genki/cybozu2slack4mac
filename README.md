@@ -1,7 +1,9 @@
 # 概要
 - サイボウズの予定をcrawlingして予定5分前にslackに通知するmac用スクリプトです
-- 毎朝平日9:53に,サイボウズをcarwlingして5分前の時刻にremindするjobを、atコマンドに登録します
-- ただし、パソコンがスリープ状態・シャットダウン状態の時は、すでに登録されているreminderに関してはスリープ解除・起動時にremindします
+- 平日の朝9:53に,サイボウズをcarwlingして,5分前の時刻にremindするjobをatコマンドに登録します
+- ただし、パソコンがスリープ状態・シャットダウン状態の時は、すでに登録されているreminderに限ってスリープ解除・起動時に通知されます
+- 同様に、9:53の時点でパソコンがスリープ状態であったとしても、reminderを登録するスクリプトはスリープ解除時に実行されます
+　(ただし、スリープ解除時刻より早い予定のリマインダーは登録されません)
 
 # インストール
 1. [ここ](http://qiita.com/tt2004d/items/50d79d1569c0ace118d6)を参考に、slackに対してmessageを送るためのurlを取得してください
@@ -47,7 +49,7 @@ sh cybozu2slack4mac/install.sh
 
 ## send2slack
 - **usage** `send2slack [-i bot_icon] [-n bot_name] [-c channel] [-b] url message`
-- bオブションをつけるとバッククウォートでmessageを囲って送信します。(message => ```message```)
+- bオプションをつけるとバッククウォートでmessageを囲って送信します。(message => ```message```)
 - パイプ越しに渡すこともできます
 
 ```
@@ -66,13 +68,13 @@ echo "hahaha!" | send2slack url
 
 ```
 #!/bin/sh
-url=#ここにurlを入力
-send2slack=#send2slackの絶対パス
+url=###################### ここにurlを入力
+send2slack=############### send2slackの絶対パス
 
 #デフォルト値
 icon=ghost
 name=my_bot
-default_channel=trash
+channel=trash
 
 while getopts i:n:c:b opt; do
   case $opt in
