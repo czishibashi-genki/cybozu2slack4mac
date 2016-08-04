@@ -24,9 +24,13 @@ crawl_cybozu=$prd/src/cybozu
 read_env() {
   while read line; do
     var_name=$(echo "$line" | awk -F= '{gsub(/^ +| +$/,"",$1); print $1}')
-    var_value=$(echo "$line" | awk -F= '{gsub(/^ +| +$/,"",$2); print $2}')
+    var_value=$(echo "$line" | cut -d= -f2- | awk '{gsub(/^ +| +$/,""); print}')
     eval "${var_name:-_}='${var_value:-_}'"
   done < <(cat $prd/resource/env | grep -Ev "^ *#+|^ *$")
+}
+
+is_visible_private_schedules(){
+  [ "${is_visible_private_schedule:-false}" = 'true' ] && echo 1 || echo 0
 }
 
 #第一フィールドの5分前の時刻を求める input 18:50 19:00 ... => output 18:45
@@ -37,9 +41,10 @@ get_minus_5min_datetime() {
 #atコマンドで実行するコマンドを求める
 create_command_to_send_to_slack() {
    echo "$*" |\
-     awk '
-     /（非公開）/{
-       $0 = $1" （非公開）"
+     awk -v is_visible_secret_schedule=$(is_visible_private_schedules) '
+     (!is_visible_secret_schedule) && /（非公開）/ {
+       match($0, /[0-9:]{4,5}-[0-9:]{4,5} +/);
+       $0 = substr($0, RSTART, RLENGTH)"(非公開)"
      }
      { print }
      ' |\

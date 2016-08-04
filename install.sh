@@ -31,6 +31,12 @@ cybozu_account =
 # サイボウズのパスワード
 cybozu_password = 
 
+### その他の設定 ###
+# 非公開の予定がslackに表示されるかどうか
+# true  => 10:00-19:00  超極秘MTG(非公開)
+# false => 10:00-19:00  (非公開)
+is_visible_private_schedule = false
+
 EOF
 
 vim $env_file

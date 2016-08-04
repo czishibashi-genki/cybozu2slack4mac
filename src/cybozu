@@ -8,6 +8,7 @@ while getopts d:p opt; do
   case $opt in
     'd') day=$((OPTARG + 1)) ;;
     'p') plain=on ;;
+    *) exit 1 ;;
   esac
 done
 

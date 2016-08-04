@@ -5,6 +5,7 @@ while getopts i:n:c:b opt; do
     'n') name=$OPTARG ;;
     'c') channel=$OPTARG ;;
     'b') back_quote="on" ;;
+    *) exit 1 ;;
   esac
 done
 
