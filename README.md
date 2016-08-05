@@ -15,27 +15,38 @@ git clone https://github.com/cznagao-kazuma/cybozu2slack4mac.git
 sh cybozu2slack4mac/install.sh
 ```
 
+# アップデート
+- 以下のコマンドを実行してください
+```
+sh cybozu2slack4mac/update.sh 
+```
+
 # 設定の変更
-- cybozu2slack4mac/resource/envを編集すると次回分から設定が反映されます
+- `cybozu2slack4mac/src/reminder -e`　で変更・反映できます
 
 # reminderの確認
-- atコマンドを使います
-- 一覧表示 `at -l` または `atq`
-- 詳細確認 `at -c job番号`
-- 削除　　 `at -r job番号`
-- 全件削除 `at -r $(atq | cut -f1)`
+- `cybozu2slack4mac/src/reminder -l`　で確認できます
 
 # ログ
 | file | 内容 |
 |:-----|:-----|
 | slack.log | slackに送ったメッセージが出力されます |
 | register_command.log | atコマンドに登録するコマンドが出力されます |
-| register_info.log | atコマンドにjob登録した時の,atコマンドの出力が記録されます |
+| register_info.log | コマンド全般に関する情報が出力されます。errorが出たときはここを確認して、詳細は上二つのlogを確認してください |
 
 # コマンドの詳細
+## remider
+- reminderの情報を確認したり、設定を変更したりするときに使うコマンドです
+- `reminder -l` reminderのlistを表示します
+- `reminder -e` 設定を変更し、それを反映します
+- `reminder -d reminder番号` 該当の番号のreminderを削除します
+- `reminder -D ` reminderを全件削除します
+- `reminder -r ` reminderを全件削除し、再びcrawlingして登録し直します
+
 ## regist_reminder
+- 普段は叩くことがないコマンドです。(reminderコマンドを利用してください)
 - cybozuコマンドとsend2slackコマンドを使ってリマインドを登録するコマンド
-- cybozuに登録されている予定5分前にslackに通知するjobをatコマンドに登録します
+- cybozuに登録されている予定5分前にslackに通知するjobをatコマンドに登録した後、次の日のreminder登録コマンド(つまり自分自身)を登録します.
 
 ## cybozu
 - **usage** `cybozu [-p] [-d day] [account_name] [password]`

@@ -5,8 +5,10 @@ usage(){
   echo -e "\033[31m[usage]\033[m"
   cat <<EOF 
 reminder -l : リマインダー一覧を表示します
-reminder -e : リマインダーの設定を変更し、その変更をreminderに反映します
-reminder -r reminder番号 : 該当する番号のリマインダーを削除します
+reminder -d reminder番号 : 該当する番号のリマインダーを削除します
+reminder -D : reminderを全件削除するコマンドです
+reminder -r : reminderをrefreshします。(全件削除し、再びcrawlingしてreminderを生成します)
+reminder -e : リマインダーの設定を変更し、その変更をreminderに反映します(内部で -rが走っています)
 EOF
 }
 
@@ -18,21 +20,29 @@ error_out() {
 
 check_option(){
   if [ ! -z "$command" ]; then
-    error_out '同時に指定できるオプションは一つだけです！'
+    error_out '同時に指定できるオプションは一つだけです！(サブコマンドにしろとか言わない) '
     return 1
   else 
     return 0
   fi
 }
 
-edit_env(){
-  vim $prd/resource/env
+remove_reminder(){
+  at -r $*
+}
+
+remove_all_reminder(){
   remove_reminder $(atq | cut -f1)
+}
+
+refresh_reminder(){
+  remove_all_reminder
   $prd/src/regist_reminder
 }
 
-remove_reminder(){
-  at -r $*
+edit_env(){
+  vim $prd/resource/env
+  refresh_reminder
 }
 
 reminder_list(){
@@ -70,11 +80,13 @@ reminder_list(){
     ')
 }
   
-while getopts elr opt; do
+while getopts dDelr opt; do
   case $opt in
     'e') check_option && command=edit_env || exit 1;;
     'l') check_option && command=reminder_list || exit 1;;
-    'r') check_option && command=remove_reminder || exit 1;;
+    'd') check_option && command=remove_reminder || exit 1;;
+    'D') check_option && command=remove_all_reminder || exit 1;;
+    'r') check_option && command=refresh_reminder || exit 1;;
     *) error_out "利用できないオプションです"; exit 1;;
   esac
 done
