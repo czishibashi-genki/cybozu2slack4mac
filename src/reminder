@@ -1,0 +1,84 @@
+#!/bin/bash
+prd=$(cd $(dirname $0)/.. && pwd)
+
+usage(){
+  echo -e "\033[31m[usage]\033[m"
+  cat <<EOF 
+reminder -l : リマインダー一覧を表示します
+reminder -e : リマインダーの設定を変更し、その変更をreminderに反映します
+reminder -r reminder番号 : 該当する番号のリマインダーを削除します
+EOF
+}
+
+error_out() {
+  message=$*
+  echo -e "\033[31m$message\033[m"
+  usage
+}
+
+check_option(){
+  if [ ! -z "$command" ]; then
+    error_out '同時に指定できるオプションは一つだけです！'
+    return 1
+  else 
+    return 0
+  fi
+}
+
+edit_env(){
+  vim $prd/resource/env
+  remove_reminder $(atq | cut -f1)
+  $prd/src/regist_reminder
+}
+
+remove_reminder(){
+  at -r $*
+}
+
+reminder_list(){
+  paste \
+    <(atq |\
+        tr "\t" " " |\
+        tr -s " " |\
+        cut -d" " -f1,3-5) \
+    <(at -c $(atq | cut -f1) |\
+        grep cybozu2slack4mac/ |\
+        grep -oE '(echo.*send2slack[^|]*|^ *bash .*)' |\
+        tr -d "'" |\
+        awk '
+          function extract_option(body, option){
+            regex = "-"option" ?[^ ]*";
+            match(body, regex);
+            return substr(body, RSTART + 2, RLENGTH - 2);
+          }
+   
+          /echo/{
+            match($0,/echo[^|]*/);
+            message = substr($0, RSTART, RLENGTH);
+            gsub(/echo ?/, "", message);
+            match($0, /send2slack[^|]*/);
+            slack_info = substr($0, RSTART, RLENGTH);
+            channel = "#"extract_option(slack_info, "c");
+            name = extract_option(slack_info, "n");
+            icon = ":"extract_option(slack_info, "i")":";
+            print message, channel, name, icon
+          }
+   
+          !/echo/{
+            print
+          }
+    ')
+}
+  
+while getopts elr opt; do
+  case $opt in
+    'e') check_option && command=edit_env || exit 1;;
+    'l') check_option && command=reminder_list || exit 1;;
+    'r') check_option && command=remove_reminder || exit 1;;
+    *) error_out "利用できないオプションです"; exit 1;;
+  esac
+done
+
+shift $((OPTIND - 1))
+  
+${command:-usage} $*

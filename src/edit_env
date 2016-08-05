@@ -1,7 +1,0 @@
-#!/bin/sh
-#project_root_dir
-prd=$(cd $(dirname $0)/.. && pwd)
-
-vim $prd/resource/env
-at -r $(atq | cut -f1)
-$prd/src/regist_reminder
