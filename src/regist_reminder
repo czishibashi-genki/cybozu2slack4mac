@@ -29,8 +29,8 @@ read_env() {
   done < <(cat $prd/resource/env | grep -Ev "^ *#+|^ *$")
 }
 
-is_visible_private_schedules(){
-  [ "${is_visible_private_schedule:-false}" = 'true' ] && echo 1 || echo 0
+show_private_schedules(){
+  [ "${show_private_schedule:-false}" = 'true' ] && echo 1 || echo 0
 }
 
 #第一フィールドの5分前の時刻を求める input 18:50 19:00 ... => output 18:45
@@ -41,10 +41,10 @@ get_minus_5min_datetime() {
 #atコマンドで実行するコマンドを求める
 create_command_to_send_to_slack() {
    echo "$*" |\
-     awk -v is_visible_secret_schedule=$(is_visible_private_schedules) '
-     (!is_visible_secret_schedule) && /（非公開）/ {
+     awk -v show_secret_schedule=$(show_private_schedules) '
+     (!show_secret_schedule) && /（非公開）/ {
        match($0, /[0-9:]{4,5}-[0-9:]{4,5} +/);
-       $0 = substr($0, RSTART, RLENGTH)"(非公開)"
+       $0 = substr($0, 0, RSTART + RLENGTH - 1)"(非公開)"
      }
      { print }
      ' |\

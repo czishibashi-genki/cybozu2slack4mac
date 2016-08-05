@@ -35,7 +35,7 @@ cybozu_password =
 # 非公開の予定がslackに表示されるかどうか
 # true  => 10:00-19:00  超極秘MTG(非公開)
 # false => 10:00-19:00  (非公開)
-is_visible_private_schedule = false
+show_private_schedule = false
 
 EOF
 
