@@ -20,3 +20,4 @@ main(){
   update_to_1_0
 }
   
+main
