@@ -42,11 +42,11 @@ get_minus_5min_datetime() {
 create_command_to_send_to_slack() {
    echo "$*" |\
      awk -v show_secret_schedule=$(show_private_schedules) '
-     (!show_secret_schedule) && /（非公開）/ {
-       match($0, /[0-9:]{4,5}-[0-9:]{4,5} +/);
-       $0 = substr($0, 0, RSTART + RLENGTH - 1)"(非公開)"
-     }
-     { print }
+       (!show_secret_schedule) && /（非公開）/ {
+         match($0, /[0-9:]{4,5}-[0-9:]{4,5} +/);
+         $0 = substr($0, 0, RSTART + RLENGTH - 1)"(非公開)"
+       }
+       { print }
      ' |\
      awk "{ 
        send2slack = \"$send_to_slack -n'$bot_name' -i'$bot_icon' -c'$channel' '$slack_url' 1>/dev/null 2>>$slack_log\";
