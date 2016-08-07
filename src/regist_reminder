@@ -60,17 +60,11 @@ regist_reminder() {
   if [ -n "$schedules" ]; then
     paste \
         <(create_command_to_send_to_slack "${schedules//∆/:warning:}") \
-        <(get_minus_5min_datetime "$(echo "${schedules//-/ }" |\
-            awk '
-              $1 != "∆"{$0 = "_ "$0}
-              {print}
-            ' |\
-            cut -d" " -f2- )"\
-        ) |\
+        <(get_minus_5min_datetime "$(echo "${schedules//∆ /}" | tr "-" " ")") |\
       awk -F"\t" '
         {
           command = "date +[%R_%D] >>'"$slack_log"'; "$1;
-          print "echo \"", command, "\" | at ", $2
+          print "echo \"", command, "\" | at ", $2;
         }' |\
       tee -a $register_command_log |\
       bash 2>>$register_info_log || return 1
