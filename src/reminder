@@ -38,6 +38,7 @@ remove_all_reminder(){
 refresh_reminder(){
   remove_all_reminder
   $prd/src/regist_reminder
+  reminder_list
 }
 
 edit_env(){

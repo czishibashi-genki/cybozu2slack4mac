@@ -55,7 +55,11 @@ create_command_to_send_to_slack() {
 }
 
 regist_reminder() {
-  schedules=$($crawl_cybozu $cybozu_account $cybozu_password 2>>$register_info_log) || return 1
+  schedules=$($crawl_cybozu $cybozu_account $cybozu_password 2>>$register_info_log) || {
+    echo "cybozuへのログインに失敗しました。以下、ログです。"
+    tail -5 $register_info_log
+    return 1;
+  }
 
   if [ -n "$schedules" ]; then
     paste \

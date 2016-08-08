@@ -48,5 +48,7 @@ sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist
 
 $prd/src/regist_reminder 
 
-echo "install完了しました。以下のコマンドでリマインダーを確認できます"
+echo "install終了しました。以下のコマンドでリマインダーを確認できます"
 echo "$prd/src/reminder -l"
+echo "また、設定を間違えた場合、以下のコマンドを実行すると設定を変更・反映できます。"
+echo "$prd/src/reminder -e"

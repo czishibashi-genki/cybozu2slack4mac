@@ -14,7 +14,7 @@ shift $((OPTIND - 1))
 url=${1:?urlを指定してください！！}
 shift 1
 
-message="$(echo "${*:-$(cat -)}" | tr '"' '”' | tr -d \\)"
+message="$(printf %q "$(echo "${*:-$(cat -)}")")"
 
 json="$(cat <<EOF
 payload={
